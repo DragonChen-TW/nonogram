@@ -1,11 +1,18 @@
 package main
 
-import "fmt"
+import (
+	"github.com/dragonchen-tw/nonogram/pkgs/game"
+
+	"github.com/hajimehoshi/ebiten/v2"
+)
 
 // Author:	DragonChen https://github.com/dragonchen-tw/
 // Title:	Nonogram
 // Date:	2022/09/10
 
 func main() {
-	fmt.Println("nonogram")
+	g := game.NewGame()
+	if err := ebiten.RunGame(&g); err != nil {
+		panic(err)
+	}
 }
