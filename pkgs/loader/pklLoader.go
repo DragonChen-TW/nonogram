@@ -34,6 +34,7 @@ func parseLine(data *GameData, line string) ([]int, []color.Color) {
 }
 
 func (pkl *PklLoader) Load(path string) (GameData, error) {
+	// Read text
 	byteData, err := os.ReadFile(path)
 	if err != nil {
 		panic(err)
@@ -44,6 +45,7 @@ func (pkl *PklLoader) Load(path string) (GameData, error) {
 		panic(fmt.Sprintf("No enough data, only %d line", len(data)))
 	}
 
+	// Parse data
 	width, _ := strconv.Atoi(data[1])
 	height, _ := strconv.Atoi(data[2])
 	gameData := GameData{

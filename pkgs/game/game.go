@@ -11,14 +11,16 @@ import (
 )
 
 type Game struct {
+	screen        *ebiten.Image
 	keys          []ebiten.Key
 	gameData      loader.GameData
 	colorfulBlock bool
 }
 
-const mosaicNum = 15
-
-var mosaicRatio int
+const (
+	boardSize = 336
+	padding   = 4
+)
 
 func NewGame() Game {
 	// Global game setting
@@ -33,6 +35,7 @@ func NewGame() Game {
 	fmt.Printf("%v\n", gameData)
 
 	return Game{
+		screen:   ebiten.NewImage(336, 336),
 		keys:     make([]ebiten.Key, 0),
 		gameData: gameData,
 	}
@@ -58,10 +61,8 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	// ebitenutil.DebugPrint(screen, "Hello, World!")
 
 	// Draw blocks
-	const (
-		blockSize = 64
-		padding   = 4
-	)
+	blockSize := (boardSize - padding*(g.gameData.Height-1)) / g.gameData.Height
+	fmt.Println(g.gameData.Height, blockSize)
 
 	for i := 0; i < g.gameData.Width; i++ {
 		for j := 0; j < g.gameData.Height; j++ {
@@ -76,13 +77,20 @@ func (g *Game) Draw(screen *ebiten.Image) {
 				}
 			}
 
-			ebitenutil.DrawRect(screen,
+			ebitenutil.DrawRect(g.screen,
 				float64(i*blockSize+padding*(i-1)), float64(j*blockSize+padding*(j-1)),
-				blockSize, blockSize,
+				float64(blockSize), float64(blockSize),
 				bColor,
 			)
 		}
 	}
+
+	// Put center
+	marginX := (screen.Bounds().Dx() - boardSize) / 2
+	marginY := (screen.Bounds().Dy() - boardSize) / 2
+	op := &ebiten.DrawImageOptions{}
+	op.GeoM.Translate(float64(marginX), float64(marginY))
+	screen.DrawImage(g.screen, op)
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeight int) {
