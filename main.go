@@ -13,6 +13,8 @@ import (
 func main() {
 	g := game.NewGame()
 	if err := ebiten.RunGame(&g); err != nil {
-		panic(err)
+		if err.Error() != "Exit Game" {
+			panic(err)
+		}
 	}
 }
