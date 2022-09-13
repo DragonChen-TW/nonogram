@@ -53,14 +53,14 @@ func (pkl *PklLoader) Load(path string) (GameData, error) {
 		Width:  width,
 		Height: height,
 	}
-	if len(data[3:]) != width {
+	fmt.Printf("Load %s, %dx%d\n", gameData.Name, gameData.Width, gameData.Height)
+	if len(data[3:]) != height {
 		panic(fmt.Sprintf("No enough matched data, want %d, got %d", width, len(data[3:])))
 	}
 
 	// Insert data
 	gameData.Answer = make([][]int, height)
 	gameData.Color = make([][]color.Color, height)
-	fmt.Println(gameData.Answer)
 	for i, line := range data[3:] {
 		gameData.Answer[i], gameData.Color[i] = parseLine(&gameData, line)
 	}

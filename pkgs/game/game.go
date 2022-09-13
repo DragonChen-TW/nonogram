@@ -11,7 +11,7 @@ import (
 )
 
 type Game struct {
-	screen        *ebiten.Image
+	board         *ebiten.Image
 	keys          []ebiten.Key
 	gameData      loader.GameData
 	colorfulBlock bool
@@ -31,11 +31,14 @@ func NewGame() Game {
 	if err != nil {
 		panic(err)
 	}
+	gameData.CalculateHints()
 
-	fmt.Printf("%v\n", gameData)
+	fmt.Printf("WHint: %v, HHint: %v\n", gameData.WHint, gameData.HHint)
 
+	bg := ebiten.NewImage(336, 336)
+	bg.Fill(color.RGBA{200, 200, 200, 255})
 	return Game{
-		screen:   ebiten.NewImage(336, 336),
+		board:    bg,
 		keys:     make([]ebiten.Key, 0),
 		gameData: gameData,
 	}
@@ -62,10 +65,9 @@ func (g *Game) Draw(screen *ebiten.Image) {
 
 	// Draw blocks
 	blockSize := (boardSize - padding*(g.gameData.Height-1)) / g.gameData.Height
-	fmt.Println(g.gameData.Height, blockSize)
 
-	for i := 0; i < g.gameData.Width; i++ {
-		for j := 0; j < g.gameData.Height; j++ {
+	for i := 0; i < g.gameData.Height; i++ {
+		for j := 0; j < g.gameData.Width; j++ {
 			var bColor color.Color
 			if g.colorfulBlock {
 				bColor = g.gameData.Color[i][j]
@@ -77,8 +79,8 @@ func (g *Game) Draw(screen *ebiten.Image) {
 				}
 			}
 
-			ebitenutil.DrawRect(g.screen,
-				float64(i*blockSize+padding*(i-1)), float64(j*blockSize+padding*(j-1)),
+			ebitenutil.DrawRect(g.board,
+				float64(j*blockSize+padding*j), float64(i*blockSize+padding*i),
 				float64(blockSize), float64(blockSize),
 				bColor,
 			)
@@ -90,7 +92,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	marginY := (screen.Bounds().Dy() - boardSize) / 2
 	op := &ebiten.DrawImageOptions{}
 	op.GeoM.Translate(float64(marginX), float64(marginY))
-	screen.DrawImage(g.screen, op)
+	screen.DrawImage(g.board, op)
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeight int) {

@@ -1,8 +1,8 @@
 # Nonogram
 
-A nonogram player (editor, solver, website in the future).  
-Fast, light-weight and clear.  
-Cross-platform supported.
+A nonogram player (generator, editor, solver and website in the future).  
+User-friendly, many-featured, easy game platform.  
+Cross-platform supported.  
 
 ## Features
 
