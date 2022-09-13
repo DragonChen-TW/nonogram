@@ -5,12 +5,12 @@ import (
 )
 
 type GameData struct {
-	name          string
-	width, height int
-	wHint         []int
-	hHint         []int
-	answer        [][]int
-	color         [][]color.Color
+	Name          string
+	Width, Height int
+	WHint         []int
+	HHint         []int
+	Answer        [][]int
+	Color         [][]color.Color
 }
 
 type FileLoader interface {
