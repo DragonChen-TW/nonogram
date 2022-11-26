@@ -11,12 +11,17 @@ import (
 type PklLoader struct {
 }
 
-// New a pklLoader and reture
-func NewPklLoader() PklLoader {
-	return PklLoader{}
+// New a pklLoader and return
+func NewPklLoader() *PklLoader {
+	return &PklLoader{}
 }
 
 func parseColor(s string) color.Color {
+	// TODO: return error when the legnth of string is < 6
+	// if len(s) < 6 {
+	// 	return fmt.Errorf("Can't parse color from string its length has only %d", len(s))
+	// }
+
 	n1, _ := strconv.ParseInt(s[0:2], 16, 64)
 	n2, _ := strconv.ParseInt(s[2:4], 16, 64)
 	n3, _ := strconv.ParseInt(s[4:6], 16, 64)
