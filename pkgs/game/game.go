@@ -3,11 +3,19 @@ package game
 import (
 	"fmt"
 	"image/color"
+	"log"
+	"strconv"
+	"strings"
+
+	"golang.org/x/image/font"
+	"golang.org/x/image/font/opentype"
 
 	"github.com/dragonchen-tw/nonogram/pkgs/loader"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
+	"github.com/hajimehoshi/ebiten/v2/examples/resources/fonts"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
+	"github.com/hajimehoshi/ebiten/v2/text"
 )
 
 type Game struct {
@@ -31,6 +39,13 @@ var blockSize int
 
 var isDrawHint bool = true
 
+type HintFontPair struct {
+	nNumber       int
+	hintBlockSize int
+}
+
+var hintFontPool map[HintFontPair]font.Face
+
 func NewGame() Game {
 	// Global game setting
 	ebiten.SetWindowResizingMode(ebiten.WindowResizingModeOnlyFullscreenEnabled)
@@ -49,6 +64,9 @@ func NewGame() Game {
 
 	fmt.Printf("WHint: %v, HHint: %v\n", gameData.WHint, gameData.HHint)
 
+	// // Init Fonts
+	// InitFonts()
+
 	// New base image
 	bg := ebiten.NewImage(boardSize, boardSize)
 	bg.Fill(color.RGBA{200, 200, 200, 255})
@@ -57,6 +75,33 @@ func NewGame() Game {
 		keys:     make([]ebiten.Key, 0),
 		gameData: gameData,
 	}
+}
+
+func CalculateHintFontPair(nNumber int, hintBlockSize int) font.Face {
+	pair := HintFontPair{nNumber: nNumber, hintBlockSize: hintBlockSize}
+	if face, exist := hintFontPool[pair]; exist == true {
+		return face
+	}
+
+	tt, err := opentype.Parse(fonts.MPlus1pRegular_ttf)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	const dpi = 72
+	var fontHeight int = (hintBlockSize / nNumber) - (16 - nNumber*8)
+	fontFace, err := opentype.NewFace(tt, &opentype.FaceOptions{
+		Size:    float64(fontHeight),
+		DPI:     dpi,
+		Hinting: font.HintingFull,
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+	fontFace = text.FaceWithLineHeight(fontFace, float64(fontHeight))
+
+	// hintFontPool[pair] = fontFace
+	return fontFace
 }
 
 func (g *Game) Update() error {
@@ -89,7 +134,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	} else {
 		blockSize = (boardSize - padding*(g.gameData.Height+1)) / g.gameData.Height
 	}
-	fmt.Println("board", boardSize, "block", blockSize, "padding", padding)
+	// fmt.Println("board", boardSize, "block", blockSize, "padding", padding)
 
 	for i := 0; i < g.gameData.Height; i++ {
 		for j := 0; j < g.gameData.Width; j++ {
@@ -131,13 +176,71 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	op := &ebiten.DrawImageOptions{}
 	op.GeoM.Translate(float64(marginX), float64(marginY))
 	screen.DrawImage(g.board, op)
+
+	// test := ebiten.NewImage(100, 100)
+	// test.Fill(color.RGBA{200, 200, 200, 255})
+	// testtext := "x"
+	// face := CalculateHintFontPair(1, blockSize)
+	// // textRect := text.BoundString(face, testtext)
+	// text.Draw(test, testtext, face, 50, 50, color.Black)
+
+	// op1 := &ebiten.DrawImageOptions{}
+	// op.GeoM.Translate(50, 50)
+	// screen.DrawImage(test, op1)
 }
 
 func (g *Game) DrawHints() {
+	// wHints
 	hintSize := blockSize
 
 	wHintBoard := ebiten.NewImage(blockSize*g.gameData.Width+padding*(g.gameData.Width-1), hintSize)
 	wHintBoard.Fill(color.RGBA{255, 150, 150, 255})
+
+	// hint blocks
+	hintBlock := ebiten.NewImage(blockSize, blockSize)
+	var face font.Face
+	for i := 0; i < g.gameData.Width; i++ {
+		// hintBlock.Fill(color.RGBA{255, 200, 200, 255})
+
+		// put hint text
+		var wh []string
+		for _, h := range g.gameData.WHint[i] {
+			wh = append(wh, strconv.Itoa(h))
+		}
+
+		whText := strings.Join(wh, "\n")
+		face = CalculateHintFontPair(len(wh), hintSize)
+		textRect := text.BoundString(face, whText)
+
+		// shiftX := i*hintSize + (i+1)*padding + (blockSize-textRect.Dx())/2
+		shiftX := (blockSize-textRect.Dx())/2 - padding + i*blockSize + i*padding
+		shiftY := (blockSize-textRect.Dy())/2 + (-textRect.Min.Y)
+		// fmt.Println("shiftX", shiftX)
+		text.Draw(wHintBoard, whText, face,
+			// x, y position
+			shiftX, shiftY,
+			color.Black,
+		)
+
+		op := &ebiten.DrawImageOptions{}
+		op.GeoM.Translate(float64(padding*i+blockSize*i), 0)
+		wHintBoard.DrawImage(hintBlock, op)
+	}
+
+	// hintText := "1\n1\n1"
+	// face := CalculateHintFontPair(3, hintSize)
+	// textRect := text.BoundString(face, hintText)
+	// text.Draw(wHintBoard, hintText, face, hintSize/2-textRect.Dx()/2, -(textRect.Min.Y + ), color.Black)
+
+	// hintText = "\n1\n3"
+	// face = CalculateHintFontPair(2, hintSize)
+	// textRect = text.BoundString(face, hintText)
+	// text.Draw(wHintBoard, hintText, face, hintSize/2-textRect.Dx()/2+blockSize+padding, 0, color.Black)
+
+	// hintText = "\n4"
+	// face = CalculateHintFontPair(1, hintSize)
+	// textRect = text.BoundString(face, hintText)
+	// text.Draw(wHintBoard, hintText, face, hintSize/2-textRect.Dx()/2+blockSize*2+padding*2, 0, color.Black)
 
 	op1 := &ebiten.DrawImageOptions{}
 	op1.GeoM.Translate(
@@ -146,6 +249,7 @@ func (g *Game) DrawHints() {
 	)
 	g.board.DrawImage(wHintBoard, op1)
 
+	// hHints
 	hHintBoard := ebiten.NewImage(hintSize, blockSize*g.gameData.Width+padding*(g.gameData.Width-1))
 	hHintBoard.Fill(color.RGBA{255, 150, 150, 255})
 
