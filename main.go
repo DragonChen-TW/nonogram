@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/dragonchen-tw/nonogram/pkgs/game"
+	"github.com/dragonchen-tw/nonogram/pkg/game"
 
 	"github.com/hajimehoshi/ebiten/v2"
 )

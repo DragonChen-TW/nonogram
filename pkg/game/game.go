@@ -10,7 +10,7 @@ import (
 	"golang.org/x/image/font"
 	"golang.org/x/image/font/opentype"
 
-	"github.com/dragonchen-tw/nonogram/pkgs/loader"
+	"github.com/dragonchen-tw/nonogram/pkg/loader"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	"github.com/hajimehoshi/ebiten/v2/examples/resources/fonts"
